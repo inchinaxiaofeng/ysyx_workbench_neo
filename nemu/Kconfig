@@ -155,6 +155,11 @@ config WATCHPOINT
   bool "Enable watchpoint scanner"
   default n
 
+config IRINGBUF
+  depends on ITRACE
+  bool "Enable IRINGBUF instructions information"
+  default n
+
 config DIFFTEST
   depends on TARGET_NATIVE_ELF
   bool "Enable differential testing"

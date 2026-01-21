@@ -14,10 +14,15 @@
  ***************************************************************************************/
 
 #include "../monitor/sdb/sdb.h"
+#include "debug.h"
+#include "macro.h"
 #include <cpu/cpu.h>
 #include <cpu/decode.h>
 #include <cpu/difftest.h>
 #include <locale.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
@@ -39,15 +44,17 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
     log_write("%s\n", _this->logbuf);
   }
 #endif
+  if (g_print_step) {
+    IFDEF(CONFIG_ITRACE, puts(_this->logbuf));
+  }
+  IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
 #ifdef CONFIG_WATCHPOINT
   if (check_watchpoint()) {
     nemu_state.state = NEMU_STOP;
   };
 #endif /* ifdef CONFIG_WATCHPOINT */
-  if (g_print_step) {
-    IFDEF(CONFIG_ITRACE, puts(_this->logbuf));
-  }
-  IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
+  // NOTE: `IRINGBUF`
+  IFDEF(CONFIG_IRINGBUF, iringbuf_load(_this));
 }
 
 static void exec_once(Decode *s, vaddr_t pc) {
@@ -110,6 +117,10 @@ static void statistic() {
 
 void assert_fail_msg() {
   isa_reg_display();
+  // NOTE: `IRINGBUF`
+#ifdef CONFIG_IRINGBUF
+  iringbuf_display();
+#endif /* ifdef CONFIG_IRINGBUF */
   statistic();
 }
 
@@ -141,6 +152,7 @@ void cpu_exec(uint64_t n) {
 
   case NEMU_END:
   case NEMU_ABORT:
+    iringbuf_display();
     Log("nemu: %s at pc = " FMT_WORD,
         (nemu_state.state == NEMU_ABORT
              ? ANSI_FMT("ABORT", ANSI_FG_RED)
@@ -153,3 +165,30 @@ void cpu_exec(uint64_t n) {
     statistic();
   }
 }
+
+#ifdef CONFIG_IRINGBUF
+
+char iringbuf[IRINGBUF_SIZE][128] = {0}; // 环形数组
+uint64_t iringbuf_index = 0;             // 环形数组下标
+
+void iringbuf_load(Decode *_this) {
+  Assert(NULL != _this,
+         "Func [iringbuf_load] requires argument that [Decode *_this].");
+  strcpy(iringbuf[(iringbuf_index++) % IRINGBUF_SIZE], _this->logbuf);
+  return;
+}
+
+void iringbuf_display() {
+  for (size_t i = 0; i < IRINGBUF_SIZE; i++) {
+    if (NULL == iringbuf[i] || strcmp(iringbuf[i], "") == 0)
+      break;
+    if (i == (iringbuf_index - 1) % IRINGBUF_SIZE)
+      printf("\033[3;31m------>\033[0m\t");
+    else
+      printf("\t");
+    printf("%s\n", iringbuf[i]);
+  }
+  return;
+}
+
+#endif /* ifdef CONFIG_IRINGBUF */
