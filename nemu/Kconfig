@@ -120,7 +120,7 @@ config CC_DEBUG
 
 config CC_ASAN
   depends on MODE_SYSTEM
-  bool "Enable address sanitizer"
+  bool "Enable address sanitizer(False positive when Random memory initial)"
   default n
 endmenu
 
@@ -151,6 +151,9 @@ config ITRACE_COND
   string "Only trace instructions when the condition is true"
   default "true"
 
+config WATCHPOINT
+  bool "Enable watchpoint scanner"
+  default n
 
 config DIFFTEST
   depends on TARGET_NATIVE_ELF

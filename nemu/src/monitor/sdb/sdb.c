@@ -59,6 +59,7 @@ static int cmd_si(char *args);
 static int cmd_info(char *args);
 static int cmd_x(char *args);
 static int cmd_p(char *args);
+static int cmd_w(char *args);
 
 static struct {
   const char *name;
@@ -81,6 +82,10 @@ static struct {
      "address, then output the result in hex form as N consecutive 4-bytes",
      cmd_x},
     {"p", "[p EXPR]. Figure out the value of EXPR.", cmd_p},
+    {"w",
+     "[w EXPR]. Pause program execution when the value of the expression EXPR "
+     "changes.",
+     cmd_w},
 };
 
 #define NR_CMD ARRLEN(cmd_table)
@@ -144,7 +149,7 @@ static int cmd_info(char *args) {
   /* No argument given, print all info. */
   if (NULL == arg) {
     isa_reg_display();
-    // watchpoint
+    watchpoint_display();
     return 0;
   } else if (!isalpha(arg[0])) { // 合法性判断
     printf(
@@ -159,7 +164,7 @@ static int cmd_info(char *args) {
     isa_reg_display();
     break;
   case 'w':
-    // watchpoint;
+    watchpoint_display();
     break;
   default:
     printf(ANSI_FG_RED "[SDB] Unknown option." ANSI_NONE "\n");
@@ -219,8 +224,8 @@ static int cmd_x(char *args) {
 
 // FIXME: 如果解奇怪的地址, 就会导致`NEMU`崩溃
 static int cmd_p(char *args) {
-  // NOTE: 这里之所以不进行分割, 是因为后面的`expr`处理是以`\0`为结尾的.
   /* Extract the first argument */
+  // NOTE: 这里之所以不进行分割, 是因为后面的`expr`处理是以`\0`为结尾的.
   if (NULL == args) {
     printf(ANSI_FG_RED "No expr is given." ANSI_NONE "\n");
     return 0;
@@ -235,6 +240,24 @@ static int cmd_p(char *args) {
   printf(ANSI_FG_YELLOW "DEC:" ANSI_NONE " = 0d" FMT_PRId "\n" ANSI_FG_YELLOW
                         "HEX:" ANSI_NONE " = 0x" FMT_PRIx "\n",
          result, result);
+  return 0;
+}
+
+static int cmd_w(char *args) {
+  /* extract the first argument */
+  if (NULL == args) {
+    printf(ANSI_FG_RED "No arg is given." ANSI_NONE "\n");
+    return 0;
+  }
+  bool success = true;
+  WP *point = new_wp(args, &success);
+  if (!success) {
+    printf(ANSI_FG_RED "Some thing wrong happend!" ANSI_NONE "\n");
+    free_wp_NO(point->NO);
+  } else {
+    printf("Create a " ANSI_FG_CYAN "WatchPoint(NO.%d)" ANSI_NONE ": %s\n",
+           point->NO, point->condation);
+  }
   return 0;
 }
 
