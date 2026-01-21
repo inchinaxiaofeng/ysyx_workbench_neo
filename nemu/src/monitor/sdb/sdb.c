@@ -22,6 +22,7 @@
 #include <isa.h>
 #include <readline/history.h>
 #include <readline/readline.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -60,6 +61,7 @@ static int cmd_info(char *args);
 static int cmd_x(char *args);
 static int cmd_p(char *args);
 static int cmd_w(char *args);
+static int cmd_mt(char *args);
 
 static struct {
   const char *name;
@@ -86,7 +88,9 @@ static struct {
      "[w EXPR]. Pause program execution when the value of the expression EXPR "
      "changes.",
      cmd_w},
-};
+    {"mt",
+     "[m y/n]. Turn on or turn off memory trace. Set CONFIG_MTRACE first.",
+     cmd_mt}};
 
 #define NR_CMD ARRLEN(cmd_table)
 
@@ -258,6 +262,36 @@ static int cmd_w(char *args) {
     printf("Create a " ANSI_FG_CYAN "WatchPoint(NO.%d)" ANSI_NONE ": %s\n",
            point->NO, point->condation);
   }
+  return 0;
+}
+
+static int cmd_mt(char *args) {
+#ifdef CONFIG_MTRACE
+  /* extract the first argument */
+  char *arg = strtok(NULL, " ");
+  if (NULL == arg) {
+    printf("mtrace_en == %s\n", mtrace_en ? "y" : "n");
+  } else if (!isalpha(arg[0])) {
+    printf(ANSI_FG_RED
+           "[SDB] The parameter is inllegal and requires on or off" ANSI_NONE
+           "\n");
+    return 0;
+  }
+  switch (arg[0]) {
+  case 'y':
+    mtrace_en = true;
+    break;
+  case 'n':
+    mtrace_en = false;
+    break;
+  default:
+    printf(ANSI_FG_RED "[SDB] Unknown option." ANSI_NONE "\n");
+    break;
+  }
+#else
+  printf(ANSI_FG_RED "CONFIG_MTRACE not defined." ANSI_NONE "\n");
+#endif /* ifdef CONFIG_MTRACE */
+
   return 0;
 }
 
