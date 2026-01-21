@@ -152,7 +152,9 @@ void cpu_exec(uint64_t n) {
 
   case NEMU_END:
   case NEMU_ABORT:
+#ifdef CONFIG_IRINGBUF
     iringbuf_display();
+#endif
     Log("nemu: %s at pc = " FMT_WORD,
         (nemu_state.state == NEMU_ABORT
              ? ANSI_FMT("ABORT", ANSI_FG_RED)
