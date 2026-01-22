@@ -225,6 +225,9 @@ void iringbuf_display() {
 #endif /*` ifdef CONFIG_IRINGBUF `*/
 
 #ifdef CONFIG_FTRACE
+
+extern bool ftrace_en;
+
 /*```
 jal:
   |31    12|11 7|6     0|
@@ -237,6 +240,13 @@ ret:扩展为jalr x0, x1, 0
   |000000000000|00001| 000 |00000|1100111|
 ```*/
 void ftrace(Decode *inst) {
+  if (!ftrace_en) {
+    printf(ANSI_FG_RED " CONFIG_FTRACE was enabled but the -f option was not "
+                       "specified. Please specify the -f option and run the "
+                       "program again with an ELF format Img file." ANSI_NONE
+                       "\n");
+    return;
+  }
   Decode s = *inst;
   uint32_t i = inst->isa.inst;
 

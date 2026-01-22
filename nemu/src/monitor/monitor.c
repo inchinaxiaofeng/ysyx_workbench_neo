@@ -16,6 +16,7 @@
 #include <elf.h>
 #include <isa.h>
 #include <memory/paddr.h>
+#include <stdbool.h>
 #include <stdio.h>
 
 void init_rand();
@@ -27,6 +28,17 @@ void init_sdb();
 void init_disasm();
 
 #ifdef CONFIG_FTRACE
+
+// NOTE: `Ftrace` 正常运行的条件是:
+// 1. 开启 CONFIG_FTRACE
+// 2. 指定 `-f` 选项
+// 3. `-f` 选项后指定正确的 ELF 格式的 Image 文件.
+// NOTE:
+// 当开启 `CONFIG_FTRACE` 但是没有指定 `-f` 选项时, 有关于 `Ftrace`
+// 的一切操作就应当停止.
+// `is_ftrace_en` 选项就是指定是否指定了 `-f` 选项
+bool ftrace_en = false;
+
 Elf64_Sym *string_funcs =
     NULL; // string_funcs 记录了string_table中，type为STT_FUNC的tables
 int string_func_count; // string_table中，type == STT_FUNC的数量
@@ -106,6 +118,7 @@ static int parse_args(int argc, char *argv[]) {
       break;
 #ifdef CONFIG_FTRACE
     case 'f':
+      ftrace_en = true;
       init_ftrace(optarg);
       break;
 #endif /*` ifdef CONFIG_FTRACE `*/
@@ -119,7 +132,8 @@ static int parse_args(int argc, char *argv[]) {
       printf("\t-d,--diff=REF_SO        run DiffTest with reference REF_SO\n");
       printf("\t-p,--port=PORT          run DiffTest with port PORT\n");
 #ifdef CONFIG_FTRACE
-      printf("\t-f,--ftrace=ELF         run Ftrace with ELF\n");
+      printf("\t-f,--ftrace=ELF         run Ftrace with ELF. When using the -f "
+             "option, please pass in the Img(ELF) file after `-f`.\n");
 #endif /*` ifdef CONFIG_FTRACE `*/
       printf("\n");
       exit(0);
@@ -200,7 +214,9 @@ void init_ftrace(const char *argv) {
   /* 打开elf文件 */
   pelf = fopen(argv, "rb");
   Assert(NULL != pelf,
-         "[fopen] wrong.Can not open file:[%s]. Check me in [monitor.c]", argv);
+         "[fopen] wrong.Can not open file:[%s]. This may be because FTRACE was "
+         "enabled but an IMG file was not specified. Check me in [monitor.c]",
+         argv);
 
   /* 解析elf文件 */
   // 定位elf header，读取信息
