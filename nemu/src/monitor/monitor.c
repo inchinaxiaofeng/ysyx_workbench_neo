@@ -13,8 +13,10 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 
+#include <elf.h>
 #include <isa.h>
 #include <memory/paddr.h>
+#include <stdio.h>
 
 void init_rand();
 void init_log(const char *log_file);
@@ -23,6 +25,14 @@ void init_difftest(char *ref_so_file, long img_size, int port);
 void init_device();
 void init_sdb();
 void init_disasm();
+
+#ifdef CONFIG_FTRACE
+Elf64_Sym *string_funcs =
+    NULL; // string_funcs 记录了string_table中，type为STT_FUNC的tables
+int string_func_count; // string_table中，type == STT_FUNC的数量
+char *str_tab;         // 段名 字符串表(ASCII字符串的堆积)
+void init_ftrace(const char *argv);
+#endif
 
 static void welcome() {
   Log("Trace: %s", MUXDEF(CONFIG_TRACE, ANSI_FMT("ON", ANSI_FG_GREEN),
@@ -79,7 +89,8 @@ static int parse_args(int argc, char *argv[]) {
       {0, 0, NULL, 0},
   };
   int o;
-  while ((o = getopt_long(argc, argv, "-bhl:d:p:", table, NULL)) != -1) {
+  while ((o = getopt_long(argc, argv, "-bhl:d:p:" IFDEF(CONFIG_FTRACE, "f:"),
+                          table, NULL)) != -1) {
     switch (o) {
     case 'b':
       sdb_set_batch_mode();
@@ -93,6 +104,11 @@ static int parse_args(int argc, char *argv[]) {
     case 'd':
       diff_so_file = optarg;
       break;
+#ifdef CONFIG_FTRACE
+    case 'f':
+      init_ftrace(optarg);
+      break;
+#endif /*` ifdef CONFIG_FTRACE `*/
     case 1:
       img_file = optarg;
       return 0;
@@ -102,6 +118,9 @@ static int parse_args(int argc, char *argv[]) {
       printf("\t-l,--log=FILE           output log to FILE\n");
       printf("\t-d,--diff=REF_SO        run DiffTest with reference REF_SO\n");
       printf("\t-p,--port=PORT          run DiffTest with port PORT\n");
+#ifdef CONFIG_FTRACE
+      printf("\t-f,--ftrace=ELF         run Ftrace with ELF\n");
+#endif /*` ifdef CONFIG_FTRACE `*/
       printf("\n");
       exit(0);
     }
@@ -161,4 +180,122 @@ void am_init_monitor() {
   IFDEF(CONFIG_DEVICE, init_device());
   welcome();
 }
+#endif
+
+#ifdef CONFIG_FTRACE
+
+void init_ftrace(const char *argv) {
+  Assert(NULL != argv, "Function [init_ftrace] requires argument: char "
+                       "*argv.Check me in [monitor.c]");
+
+  FILE *pelf = NULL;                  // `elf` 文件指针
+  Elf64_Ehdr *header = NULL;          // `elf header`
+  Elf64_Shdr *section_headers = NULL; // `section headers` 结构体数组
+  Elf64_Sym *symbol_table = NULL;     // `string tables` 结构体数组
+  uint64_t symbol_entries = 0;        // `symbol_entrie` 的数量
+  int string_func_count_tmp = 0;
+
+  int return_value = 0; // 返回值的临时变量
+
+  /* 打开elf文件 */
+  pelf = fopen(argv, "rb");
+  Assert(NULL != pelf,
+         "[fopen] wrong.Can not open file:[%s]. Check me in [monitor.c]", argv);
+
+  /* 解析elf文件 */
+  // 定位elf header，读取信息
+  fseek(pelf, 0, SEEK_SET);
+  header = (Elf64_Ehdr *)malloc(sizeof(Elf64_Ehdr));
+  Assert(NULL != header,
+         "Can't malloc new space for [header]. Check me in [monitor.c]");
+  return_value = fread(header, sizeof(Elf64_Ehdr), 1, pelf);
+  Assert(1 == return_value,
+         "fread for [header] gose wrong. Check me in [monitor.c]");
+
+  // 定位Section header，读取信息
+  fseek(pelf, header->e_shoff, SEEK_SET);
+  section_headers = (Elf64_Shdr *)malloc(sizeof(Elf64_Shdr) * header->e_shnum);
+  Assert(
+      NULL != section_headers,
+      "Can't malloc new space for [section_headers]. Check me in [monitor.c]");
+  return_value =
+      fread(section_headers, sizeof(Elf64_Shdr) * header->e_shnum, 1, pelf);
+  Assert(1 == return_value,
+         "fread for [section_headers] gose wrong. Check me in [monitor.c]");
+
+  // 定位符号表和字符串表
+  for (size_t i = 0; i < header->e_shnum; i++) {
+    if (section_headers[i].sh_type == SHT_SYMTAB) // 找到了Symbol table符号表
+    {
+      // 通过sh_link定位符号表，读取信息
+      symbol_entries = section_headers[i].sh_size /
+                       section_headers[i].sh_entsize; // 符号表条目
+      fseek(pelf, section_headers[i].sh_offset, SEEK_SET);
+      symbol_table = (Elf64_Sym *)malloc(sizeof(Elf64_Sym) * symbol_entries);
+      Assert(
+          NULL != symbol_table,
+          "Can't malloc new space for [symbol_table]. Check me in [monitor.c]");
+      return_value =
+          fread(symbol_table, sizeof(Elf64_Sym), symbol_entries, pelf);
+      Assert(symbol_entries == return_value,
+             "fread for [symbol_table] goes wrong. Check me in [monitor.c]");
+
+      // 定位到字符串表
+      fseek(pelf, section_headers[section_headers[i].sh_link].sh_offset,
+            SEEK_SET);
+      str_tab =
+          (char *)malloc(section_headers[section_headers[i].sh_link].sh_size);
+      Assert(NULL != str_tab,
+             "Can't malloc new space for [str_tab]. Check me in [monitor.c]");
+      return_value =
+          fread(str_tab, section_headers[section_headers[i].sh_link].sh_size, 1,
+                pelf);
+      Assert(1 == return_value,
+             "fread for [str_tab] goes wrong. Check me in [monitor.c]");
+      break;
+    }
+  }
+
+  // 将string table中的type为func的entries数量做统计
+  for (size_t i = 0; i < symbol_entries; i++) {
+    if (STT_FUNC == ELF64_ST_TYPE(symbol_table[i].st_info)) {
+      string_func_count++;
+    }
+  }
+
+  // 为string_funcs malloc空间
+  string_funcs = (Elf64_Sym *)malloc(sizeof(Elf64_Sym) * string_func_count);
+  Assert(NULL != string_funcs,
+         "Can't malloc new space for [string_funcs]. Check me in [monitor.c]");
+
+  // 将string table中的type为func的entries存储起来
+  for (size_t i = 0; i < symbol_entries; i++) {
+    if (STT_FUNC == ELF64_ST_TYPE(symbol_table[i].st_info)) {
+      Assert(string_func_count_tmp < string_func_count,
+             "The index of [string_funcs] over the bound. Check me in "
+             "[monitor.c]");
+      string_funcs[string_func_count_tmp++] = symbol_table[i];
+    }
+  }
+
+  /* 释放文件指针与空间 */
+  // 关闭文件，置空文件指针
+  return_value = fclose(pelf);
+  Assert(EOF != return_value,
+         "fclose for [pelf] gose wrong. Check me in [monitor.c]");
+  pelf = NULL;
+
+  // 释放malloc空间，置空栈指针
+  free(header);
+  header = NULL;
+  free(section_headers);
+  section_headers = NULL;
+  free(symbol_table);
+  symbol_table = NULL;
+  // NOTE: str_tab在函数cpu_exec.c中释放
+
+  // 返回
+  return;
+}
+
 #endif
