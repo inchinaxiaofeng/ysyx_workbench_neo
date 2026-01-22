@@ -4,6 +4,7 @@
 
 void __am_timer_init() {}
 
+// NOTE: 时钟
 void __am_timer_uptime(AM_TIMER_UPTIME_T *uptime) {
   u_int32_t rtc2 = inl(RTC_ADDR + 4);
   u_int32_t rtc1 = inl(RTC_ADDR);

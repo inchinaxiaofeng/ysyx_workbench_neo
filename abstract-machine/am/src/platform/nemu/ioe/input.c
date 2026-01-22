@@ -3,7 +3,13 @@
 
 #define KEYDOWN_MASK 0x8000
 
+// NOTE: 键盘
 void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
-  kbd->keydown = 0;
-  kbd->keycode = AM_KEY_NONE;
+  uint32_t kvalue = inl(KBD_ADDR);
+  if ((kvalue & KEYDOWN_MASK) == 0) {
+    kbd->keydown = false;
+  } else {
+    kbd->keydown = true;
+  }
+  kbd->keycode = kvalue & (~KEYDOWN_MASK);
 }
