@@ -48,4 +48,14 @@ typedef uint16_t ioaddr_t;
 
 #include <debug.h>
 
+#ifdef CONFIG_FTRACE
+
+#include <elf.h>
+#define FMT_Elf_Sym MUXDEF(CONFIG_ISA64, Elf64_Sym, Elf32_Sym)
+#define FMT_Elf_Ehdr MUXDEF(CONFIG_ISA64, Elf64_Ehdr, Elf32_Ehdr)
+#define FMT_Elf_Shdr MUXDEF(CONFIG_ISA64, Elf64_Shdr, Elf32_Shdr)
+#define FMT_ELF_ST_TYPE MUXDEF(CONFIG_ISA64, ELF64_ST_TYPE, ELF32_ST_TYPE)
+
+#endif // CONFIG_FTRACE
+
 #endif

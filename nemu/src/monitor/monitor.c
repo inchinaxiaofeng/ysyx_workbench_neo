@@ -13,6 +13,7 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 
+#include "common.h"
 #include <elf.h>
 #include <isa.h>
 #include <memory/paddr.h>
@@ -39,7 +40,7 @@ void init_disasm();
 // `is_ftrace_en` 选项就是指定是否指定了 `-f` 选项
 bool ftrace_en = false;
 
-Elf64_Sym *string_funcs =
+FMT_Elf_Sym *string_funcs =
     NULL; // string_funcs 记录了string_table中，type为STT_FUNC的tables
 int string_func_count; // string_table中，type == STT_FUNC的数量
 char *str_tab;         // 段名 字符串表(ASCII字符串的堆积)
@@ -205,11 +206,11 @@ void init_ftrace(const char *argv) {
   Assert(NULL != argv, "Function [init_ftrace] requires argument: char "
                        "*argv.Check me in [monitor.c]");
 
-  FILE *pelf = NULL;                  // `elf` 文件指针
-  Elf64_Ehdr *header = NULL;          // `elf header`
-  Elf64_Shdr *section_headers = NULL; // `section headers` 结构体数组
-  Elf64_Sym *symbol_table = NULL;     // `string tables` 结构体数组
-  uint64_t symbol_entries = 0;        // `symbol_entrie` 的数量
+  FILE *pelf = NULL;                    // `elf` 文件指针
+  FMT_Elf_Ehdr *header = NULL;          // `elf header`
+  FMT_Elf_Shdr *section_headers = NULL; // `section headers` 结构体数组
+  FMT_Elf_Sym *symbol_table = NULL;     // `string tables` 结构体数组
+  uint64_t symbol_entries = 0;          // `symbol_entrie` 的数量
   int string_func_count_tmp = 0;
 
   int return_value = 0; // 返回值的临时变量
@@ -220,25 +221,27 @@ void init_ftrace(const char *argv) {
          "[fopen] wrong.Can not open file:[%s]. This may be because FTRACE was "
          "enabled but an IMG file was not specified. Check me in [monitor.c]",
          argv);
+  Log("Open file:[%s].", argv);
 
   /* 解析elf文件 */
   // 定位elf header，读取信息
   fseek(pelf, 0, SEEK_SET);
-  header = (Elf64_Ehdr *)malloc(sizeof(Elf64_Ehdr));
+  header = (FMT_Elf_Ehdr *)malloc(sizeof(FMT_Elf_Ehdr));
   Assert(NULL != header,
          "Can't malloc new space for [header]. Check me in [monitor.c]");
-  return_value = fread(header, sizeof(Elf64_Ehdr), 1, pelf);
+  return_value = fread(header, sizeof(FMT_Elf_Ehdr), 1, pelf);
   Assert(1 == return_value,
          "fread for [header] gose wrong. Check me in [monitor.c]");
 
   // 定位Section header，读取信息
   fseek(pelf, header->e_shoff, SEEK_SET);
-  section_headers = (Elf64_Shdr *)malloc(sizeof(Elf64_Shdr) * header->e_shnum);
+  section_headers =
+      (FMT_Elf_Shdr *)malloc(sizeof(FMT_Elf_Shdr) * header->e_shnum);
   Assert(
       NULL != section_headers,
       "Can't malloc new space for [section_headers]. Check me in [monitor.c]");
   return_value =
-      fread(section_headers, sizeof(Elf64_Shdr) * header->e_shnum, 1, pelf);
+      fread(section_headers, sizeof(FMT_Elf_Shdr) * header->e_shnum, 1, pelf);
   Assert(1 == return_value,
          "fread for [section_headers] gose wrong. Check me in [monitor.c]");
 
@@ -250,12 +253,13 @@ void init_ftrace(const char *argv) {
       symbol_entries = section_headers[i].sh_size /
                        section_headers[i].sh_entsize; // 符号表条目
       fseek(pelf, section_headers[i].sh_offset, SEEK_SET);
-      symbol_table = (Elf64_Sym *)malloc(sizeof(Elf64_Sym) * symbol_entries);
+      symbol_table =
+          (FMT_Elf_Sym *)malloc(sizeof(FMT_Elf_Sym) * symbol_entries);
       Assert(
           NULL != symbol_table,
           "Can't malloc new space for [symbol_table]. Check me in [monitor.c]");
       return_value =
-          fread(symbol_table, sizeof(Elf64_Sym), symbol_entries, pelf);
+          fread(symbol_table, sizeof(FMT_Elf_Sym), symbol_entries, pelf);
       Assert(symbol_entries == return_value,
              "fread for [symbol_table] goes wrong. Check me in [monitor.c]");
 
@@ -277,19 +281,19 @@ void init_ftrace(const char *argv) {
 
   // 将string table中的type为func的entries数量做统计
   for (size_t i = 0; i < symbol_entries; i++) {
-    if (STT_FUNC == ELF64_ST_TYPE(symbol_table[i].st_info)) {
+    if (STT_FUNC == FMT_ELF_ST_TYPE(symbol_table[i].st_info)) {
       string_func_count++;
     }
   }
 
   // 为string_funcs malloc空间
-  string_funcs = (Elf64_Sym *)malloc(sizeof(Elf64_Sym) * string_func_count);
+  string_funcs = (FMT_Elf_Sym *)malloc(sizeof(FMT_Elf_Sym) * string_func_count);
   Assert(NULL != string_funcs,
          "Can't malloc new space for [string_funcs]. Check me in [monitor.c]");
 
   // 将string table中的type为func的entries存储起来
   for (size_t i = 0; i < symbol_entries; i++) {
-    if (STT_FUNC == ELF64_ST_TYPE(symbol_table[i].st_info)) {
+    if (STT_FUNC == FMT_ELF_ST_TYPE(symbol_table[i].st_info)) {
       Assert(string_func_count_tmp < string_func_count,
              "The index of [string_funcs] over the bound. Check me in "
              "[monitor.c]");

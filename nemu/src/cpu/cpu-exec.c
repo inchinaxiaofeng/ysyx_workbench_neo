@@ -14,6 +14,7 @@
  ***************************************************************************************/
 
 #include "../monitor/sdb/sdb.h"
+#include "common.h"
 #include "debug.h"
 #include "macro.h"
 #include "utils.h"
@@ -41,9 +42,10 @@
 #define FUNC_NAME_LENGTH 32
 #define TAB_WIDTH 32
 
-extern Elf64_Sym *string_funcs; // func table
-extern int string_func_count;   // string table中func的数量
-extern char *str_tab;           // 段名 字符串表(ASCII字符串的堆积)
+// NOTE: 所有这些都在 `monitor.c` 中定义
+extern FMT_Elf_Sym *string_funcs; // func table
+extern int string_func_count;     // string table中func的数量
+extern char *str_tab;             // 段名 字符串表(ASCII字符串的堆积)
 
 int call_num = 0; // 函数调用栈计数
 
@@ -334,18 +336,21 @@ void ftrace(Decode *inst) {
              "CALL:Call_num out of range. Check me in "
              "[cpu-exec.c]. Call_num %d",
              call_num);
-      printf(FMT_WORD ":", s.pc);
+      printf(ANSI_FG_YELLOW FMT_WORD ":" ANSI_NONE, s.pc);
       print_space(call_num, 2);
-      printf("call [" ANSI_FG_MAGENTA "%s" ANSI_NONE "@" FMT_WORD "]\n", name,
-             s.dnpc);
+      printf(ANSI_BG_YELLOW "call" ANSI_NONE " [" ANSI_FG_MAGENTA "%s" ANSI_NONE
+                            "@" FMT_WORD "]\n",
+             name, s.dnpc);
     } else if (ret) {
       call_num--;
       Assert(call_num >= 0,
              "RET:Call_num out of range. Check me in [cpu-exec.c]. Call_num %d",
              call_num);
-      printf(ANSI_FG_GREEN FMT_WORD ":", s.pc);
+      printf(ANSI_FG_GREEN FMT_WORD ":" ANSI_NONE, s.pc);
       print_space(call_num, 2);
-      printf("ret  [" ANSI_FG_MAGENTA "%s" ANSI_NONE "]\n", name);
+      printf(ANSI_BG_GREEN "ret" ANSI_NONE "  [" ANSI_FG_MAGENTA "%s" ANSI_NONE
+                           "]\n",
+             name);
     }
 
     // 释放
