@@ -15,7 +15,8 @@ LDFLAGS   += --gc-sections -e _start
 NEMUFLAGS += -l $(shell dirname $(IMAGE).elf)/nemu-log.txt
 # Batch mode. 如果需要, 请在ARGS中添加 `-b`
 NEMUFLAGS += -b
-NEMUFLAGS += -f $(IMAGE).elf
+# NOTE: 当使用 `ftrace` 时, 这个是必备的.
+# NEMUFLAGS += -f $(IMAGE).elf
 
 MAINARGS_MAX_LEN = 64
 MAINARGS_PLACEHOLDER = the_insert-arg_rule_in_Makefile_will_insert_mainargs_here

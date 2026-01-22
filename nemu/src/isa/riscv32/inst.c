@@ -22,11 +22,24 @@
 #define Mr vaddr_read
 #define Mw vaddr_write
 
-// 定义一个获取高位的宏
+// Signed * Signed (`mulh`)
 #define MULH_IMPL(s1, s2)                                                      \
   MUXDEF(CONFIG_ISA64,                                                         \
          ((__int128)(sword_t)(s1) * (__int128)(sword_t)(s2)) >> 64,            \
          ((int64_t)(sword_t)(s1) * (int64_t)(sword_t)(s2)) >> 32)
+
+// Unsigned * Unsigned (`mulhu`)
+#define MULHU_IMPL(s1, s2)                                                     \
+  MUXDEF(CONFIG_ISA64,                                                         \
+         ((unsigned __int128)(s1) * (unsigned __int128)(s2)) >> 64,            \
+         ((uint64_t)(s1) * (uint64_t)(s2)) >> 32)
+
+// Signed * Unsigned (`mulhsu`)
+// 注意: s2 是无符号数, 强转为更宽的有符号类型 (如`int64/int128`)
+// 会自动进行零扩展, 从而实现 "Signed * Positive" 的效果，结果依然是 Signed 的。
+#define MULHSU_IMPL(s1, s2)                                                    \
+  MUXDEF(CONFIG_ISA64, ((__int128)(sword_t)(s1) * (__int128)(s2)) >> 64,       \
+         ((int64_t)(sword_t)(s1) * (int64_t)(s2)) >> 32)
 
 enum {
   TYPE_R,
@@ -245,6 +258,10 @@ static int decode_exec(Decode *s) {
           R(rd) = src1 * src2);
   INSTPAT("0000001 ????? ????? 001 ????? 01100 11", mulh, R,
           R(rd) = MULH_IMPL(src1, src2)); // signed * signed
+  INSTPAT("0000001 ????? ????? 010 ????? 01100 11", mulhsu, R,
+          R(rd) = MULHSU_IMPL(src1, src2)); // signed * unsigned
+  INSTPAT("0000001 ????? ????? 011 ????? 01100 11", mulhu, R,
+          R(rd) = MULHU_IMPL(src1, src2)); // unsigned * unsigned
   INSTPAT("0000001 ????? ????? 000 ????? 01110 11", mulw, R,
           R(rd) = SEXT((BITS(src1 * src2, 31, 0)), 32));
 
