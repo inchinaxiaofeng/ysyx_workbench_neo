@@ -1,10 +1,9 @@
 #include <cpu/exec.h>
-#include <engine/engine.h>
 #include <monitor/monitor.h>
 #include <monitor/sdb.h>
+void sdb_mainloop();
 
 void engine_start() {
-  cpu_init();
+  /* Receive commands from user. */
   sdb_mainloop();
-  final();
 }

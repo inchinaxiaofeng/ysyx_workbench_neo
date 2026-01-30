@@ -179,7 +179,12 @@ config FTRACE
   bool "Enable Function TRACEr. Add `-f` to use it."
   default n
 
+config VCD_TRACE
+  bool "Enable VCD File TRACEr."
+  default n
+
 config DEFAULT_VCD
+  depends on VCD_TRACE
   bool "Enable Default VCD logging."
   default n
 

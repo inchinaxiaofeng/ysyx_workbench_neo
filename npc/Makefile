@@ -40,8 +40,7 @@ INC_PATH += $(NPC_HOME)/config/
 INC_PATH += $(NPC_HOME)/csrc/include/
 INC_PATH += $(NPC_HOME)/build/
 ### 架构相关
-INC_PATH += $(NPC_HOME)/csrc/src/isa/riscv32/include
-INC_PATH += $(NPC_HOME)/csrc/src/isa/riscv32/local-include
+INC_PATH += $(NPC_HOME)/csrc/src/isa/riscv32/
 ## 放Verilator编译出的东西的
 OBJ_DIR = $(NPC_HOME)/obj_dir
 

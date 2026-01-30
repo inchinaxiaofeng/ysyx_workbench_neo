@@ -1,5 +1,6 @@
 #include <cassert>
 #include <isa.h>
+#include <memory/memory.h>
 #include <memory/paddr.h>
 #include <sim/mem_sim.h>
 #include <stdint.h>

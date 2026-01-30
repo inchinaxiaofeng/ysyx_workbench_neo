@@ -23,6 +23,8 @@
 #include <cpu/difftest.h>
 #include <elf.h>
 #include <locale.h>
+#include <memory/memory.h>
+#include <sim/verilator_sim.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -92,7 +94,7 @@ static void exec_once(Decode *s, vaddr_t pc) {
   single_step(); // 这里的TraceEN将会被指定是否开启VCD记录
   memory_exec(); // 自行判断是否需要读/写并完成操作.
 #ifdef CONFIG_DIFFTEST
-  difftest_exec();
+  diff_exec();
 #endif
 
 #ifdef CONFIG_ITRACE

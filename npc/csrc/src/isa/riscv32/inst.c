@@ -1,6 +1,10 @@
-#include <isa/riscv32/riscv32.h>
+#include "common.h"
+#include <local-include/reg.h>
 #include <memory/paddr.h>
 #include <sim/verilator_sim.h>
+
+#define R(i) gpr(i)
+#define PC cpu_pc
 
 static const uint32_t img[] = {
     0x00000297, 0x0002b823, 0x0102b503, 0x00100073, 0xdeadbeef,
@@ -17,4 +21,10 @@ void init_isa() {
 
   /* Initialize this virtual computer system. */
   restart();
+}
+
+void setRegFile(word_t rd, word_t wdata, word_t pc) {
+  PC = pc;
+  R(rd) = wdata;
+  return;
 }

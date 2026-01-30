@@ -5,6 +5,7 @@
 #include <difftest-def.h>
 
 #ifdef CONFIG_DIFFTEST
+void diff_exec();
 void difftest_step(vaddr_t pc, vaddr_t npc);
 #endif // CONFIG_DIFFTEST
 
