@@ -57,7 +57,7 @@ WP *new_wp(char *condation, bool *success) { // DONE
 
   // result->pos = expr(condation, success);
   word_t cur_value = expr(condation, success);
-  if (false == success) {
+  if (false == *success) {
     Log("Bad expr! Please check here!");
     return NULL;
   }

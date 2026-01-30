@@ -196,6 +196,13 @@ config DIFFTEST
     Enable differential testing with a reference design.
     Note that this will significantly reduce the performance of NEMU.
 
+config REF_SO
+    string "Reference design .so file name"
+    default "riscv32-nemu-interpreter-so"
+    help
+      Specifies the shared library (.so) of the reference design for
+	  differential testing. This library must export the required API functions.
+
 config DIFFREG
   depends on DIFFTEST
   bool "Enable Register File Differential Testing"

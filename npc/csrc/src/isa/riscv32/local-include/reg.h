@@ -20,14 +20,15 @@
 #define CSR 1
 
 #include <common.h>
+#include <isa.h>
 
 static inline int check_reg_idx(int idx) {
   IFDEF(CONFIG_RT_CHECK, assert(idx >= 0 && idx < MUXDEF(CONFIG_RVE, 16, 32)));
   return idx;
 }
 
-#define cpu_pc (cpu.pc)
 #define gpr(idx) (cpu.gpr[check_reg_idx(idx)])
+#define cpu_pc (cpu.pc)
 
 static inline const char *reg_name(int idx) {
   extern const char *regs[];

@@ -1,8 +1,8 @@
 # =========================================================
 # 1. 加载 Kconfig 生成的配置
 # =========================================================
-# 假设 auto.conf 在 config 目录或 build 目录下，请根据实际路径调整
-# 你的文件列表中有 auto.conf，请确保路径指向它
+## 假设 auto.conf 在 config 目录或 build 目录下，请根据实际路径调整
+########## 你的文件列表中有 auto.conf，请确保路径指向它
 CONFIG_FILE := $(NPC_HOME)/config/auto.conf 
 # 或者如果它在根目录: CONFIG_FILE := auto.conf
 
@@ -12,9 +12,9 @@ ifneq ($(wildcard $(CONFIG_FILE)),)
 endif
 
 # =========================================================
-# 2. 提取并清洗 TOPNAME
+# 2. 提取并清洗 Config
 # =========================================================
-# 默认值，防止 auto.conf 不存在或没配置时的报错
+## 默认值，防止 auto.conf 不存在或没配置时的报错
 ifndef CONFIG_TOPNAME
     TOPNAME = SimTop
 else
@@ -23,12 +23,17 @@ else
     TOPNAME = $(patsubst "%",%,$(CONFIG_TOPNAME))
 endif
 
+ifndef CONFIG_REF_SO
+	REF_SO = riscv64-nemu-interpreter-so
+else
+    REF_SO = $(patsubst "%",%,$(CONFIG_REF_SO))
+endif
+
+
 # 构造 Verilator 生成的类名 (自动加 V 前缀)
 V_TOPNAME = V$(TOPNAME)
 
 # 指定性参数
-## Refrance Module 名字
-REF = riscv64-nemu-interpreter-so
 ## 存放Verilator编译结果的
 BUILD_DIR = ./build
 ## 需要被运行的BIN文件
@@ -83,6 +88,7 @@ CFLAGS += -DVSimTop=$(V_TOPNAME) -DVSimTop_H='"$(V_TOPNAME).h"'
 ## 添加 --exe 可以自动添加 CSRC 和 VSRC
 $(EXEC_OUT): $(CSRCS) $(VSRCS)
 	@rm -rf $(OBJ_DIR)
+	@mkdir -p $(BUILD_DIR)
 	verilator $(VERILATOR_CFLAGS) \
 		--top-module $(TOPNAME) \
 		$^ \
@@ -91,7 +97,7 @@ $(EXEC_OUT): $(CSRCS) $(VSRCS)
 		--Mdir $(OBJ_DIR) --exe -o $(abspath $(EXEC_OUT))
 
 # 执行
-
+EXEC_FLAGS = -d $(NEMU_HOME)/build/$(CONFIG_REF_SO)
 EXEC := $(EXEC_OUT) $(EXEC_FLAGS) $(ARGS) $(IMG)
 
 all:
