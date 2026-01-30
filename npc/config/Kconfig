@@ -240,10 +240,10 @@ config DIFFTEST_REF_NAME
   default "none"
 endmenu
 
-# if MODE_SYSTEM
-# source "src/memory/Kconfig"
+if MODE_SYSTEM
+source "memory/Kconfig"
 # source "src/device/Kconfig"
-# endif
+endif
 
 
 menu "Miscellaneous"

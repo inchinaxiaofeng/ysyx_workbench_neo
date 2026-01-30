@@ -1,5 +1,6 @@
 #include <cpu/difftest.h>
 #include <isa.h>
+#include <isa/riscv32/inst.h>
 #include <memory/paddr.h>
 #include <sim/diff_sim.h>
 #include <stdint.h>
@@ -14,8 +15,10 @@ void diff_exec() {
 #ifdef CONFIG_DIFFREG
   // Difftest Register 遥测数据的获得
   DiffReg diffReg;
-  getDiffReg(&diffReg);                       // 获得提交信息
-  setRegFile(&diffReg);                       // 设置包装器中的影子寄存器堆
+  getDiffReg(&diffReg); // 获得提交信息
+  if (diffReg.wen)
+    setRegFile(diffReg.wdest, diffReg.wdata,
+               diffEssen.npc);                // 设置包装器中的影子寄存器堆
   difftest_step(diffEssen.pc, diffEssen.npc); // 依赖影子寄存器堆进行差分
 #endif
 }

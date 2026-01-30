@@ -68,6 +68,8 @@ LDFLAGS += -fsanitize=address -fsanitize=leak
 ## 主要仿真环境使用.
 CFLAGS += $(INCFLAGS) -DTOP_NAME"\"$(V_TOPNAME)\""
 CFLAGS += -Wall
+## 在 Makefile 中找到 CFLAGS 定义的地方添加
+CFLAGS += -D__GUEST_ISA__=riscv32
 # =========================================================
 # 3. 注入宏定义到 CFLAGS 
 # =========================================================

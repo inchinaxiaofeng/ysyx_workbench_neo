@@ -4,4 +4,8 @@
 #include <sim/verilator_sim.h>
 #include <utils.h>
 
-void final() { sim_final(); }
+void engine_final() {
+  // 获得遥测数据并进行输出.
+  sim_final();
+  return;
+}

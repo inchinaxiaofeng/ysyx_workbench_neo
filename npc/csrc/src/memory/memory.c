@@ -1,4 +1,3 @@
-#include <cassert>
 #include <isa.h>
 #include <memory/memory.h>
 #include <memory/paddr.h>
@@ -18,13 +17,13 @@ int countSetBits(uint32_t n) {
 
 void memory_exec() {
   getSimMem(&simMem);
-  if (simMem->iRen) {
-    setSimMem(paddr_read(simMem->iReadAddr, 32));
+  if (simMem.iRen) {
+    setSimMem(paddr_read(simMem.iReadAddr, 32));
   }
-  if (simMem->iWen) {
-    int len = countSetBits(simMem->iByteMask);
+  if (simMem.iWen) {
+    int len = countSetBits(simMem.iByteMask);
     assert(8 == len || 16 == len || 32 == len);
-    paddr_write(simMem->iWriteAddr, len, simMem->iWriteData);
+    paddr_write(simMem.iWriteAddr, len, simMem.iWriteData);
   }
   return;
 }

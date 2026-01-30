@@ -38,7 +38,7 @@ WP *new_wp(char *condation, bool *success) { // DONE
   }
   if (NULL == free_->next) { // 池中无空闲资源
     Log("监视点资源池中无空闲资源");
-    success = false;
+    *success = false;
     return NULL;
   }
 

@@ -23,8 +23,8 @@ void init_isa() {
   restart();
 }
 
-void setRegFile(word_t rd, word_t wdata, word_t pc) {
-  PC = pc;
+void setRegFile(word_t rd, word_t wdata, word_t npc) {
+  PC = npc;
   R(rd) = wdata;
   return;
 }

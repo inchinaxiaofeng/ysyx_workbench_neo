@@ -10,6 +10,7 @@ extern bool tele_diff_essen;
 extern bool tele_diff_reg;
 
 void single_step();
+void sim_final();
 
 #ifdef CONFIG_VCD_TRACE
 #define TRACE_DUMP(cond, tfp, time)                                            \

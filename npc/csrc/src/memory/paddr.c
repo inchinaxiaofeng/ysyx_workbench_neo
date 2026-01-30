@@ -1,5 +1,10 @@
 #include <common.h>
+#include <engine/engine.h>
+#include <isa.h>
+#include <memory/host.h>
+#include <memory/paddr.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <utils.h>
 
 #if defined(PMEM_MALLOC)
@@ -23,10 +28,10 @@ static void pmem_write(paddr_t addr, int len, word_t data) {
 }
 
 static void out_of_bound(paddr_t addr) {
-  final();
+  engine_final();
   panic("address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR
         ", " FMT_PADDR "] at pc = " FMT_WORD,
-        , addr, PMEM_LEFT, PMEM_RIGHT, pc);
+        addr, PMEM_LEFT, PMEM_RIGHT, cpu.pc);
 }
 
 void init_mem() {
