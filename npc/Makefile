@@ -55,8 +55,12 @@ EXEC_OUT = $(BUILD_DIR)/$(TOPNAME)
 
 ## 传递给Verilog编译器的参数, 用于控制编译行为
 VERILATOR_CFLAGS += -MMD --build -cc \
-					-O3 --x-assign fast --x-initial fast --noassert -j 20# \
-					#--trace --debug
+					-O3 --x-assign fast --x-initial fast --noassert -j 20
+## 检查 auto.conf 中是否开启 VCD_TRACE
+ifeq ($(CONFIG_VCD_TRACE),y)
+	VERILATOR_CFLAGS += --trace
+endif
+#--debug
 
 ## Verilog / SystemVerilog 代码
 ### 尽管我添加了sv, 但是请注意, Verilator对SystemVerilog的支持不充分, 请使用sv2v工具转化.
