@@ -3,6 +3,7 @@
 #include <sim/verilator_sim.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include str(VSimTop_H)
 
 extern VSimTop *sim_top;
 
@@ -12,8 +13,10 @@ bool getDiffEssen(DiffEssen *diffEssen) {
   }
   diffEssen->valid = sim_top->diffEssenIO_valid;
   diffEssen->pc = sim_top->diffEssenIO_pc;
+  diffEssen->npc = sim_top->diffEssenIO_npc;
   diffEssen->inst = sim_top->diffEssenIO_inst;
   diffEssen->isRVC = sim_top->diffEssenIO_isRVC;
+
   return true;
 }
 

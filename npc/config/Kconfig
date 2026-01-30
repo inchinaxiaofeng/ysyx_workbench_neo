@@ -1,5 +1,12 @@
 mainmenu "MarCore-Sim Configuration Menu"
 
+config TOPNAME
+    string "Top Module Name"
+    default "PureSimTop32"
+    help
+      The name of the top-level Verilog module. 
+      Verilator will generate a C++ class named V<TOPNAME>.
+
 choice
   prompt "Base ISA"
   default ISA_riscv
@@ -172,6 +179,10 @@ config FTRACE
   bool "Enable Function TRACEr. Add `-f` to use it."
   default n
 
+config DEFAULT_VCD
+  bool "Enable Default VCD logging."
+  default n
+
 config DIFFTEST
   depends on TARGET_NATIVE_ELF
   bool "Enable differential testing"
@@ -179,6 +190,17 @@ config DIFFTEST
   help
     Enable differential testing with a reference design.
     Note that this will significantly reduce the performance of NEMU.
+
+config DIFFREG
+  depends on DIFFTEST
+  bool "Enable Register File Differential Testing"
+  default n
+  help
+	Performs differential testing (Difftest) on the Register File,
+	comparing the Reference Model (REF) against the Design Under Test (DUT).
+	This option relies on a specific DUT interface definition.
+	Please refer to `telemetry.difftest` in the MarCore project
+	for the specific definition.
 
 choice
   prompt "Reference design"

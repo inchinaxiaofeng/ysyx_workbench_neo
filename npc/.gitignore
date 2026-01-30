@@ -12,3 +12,4 @@
 build/
 !Kconfig
 !README.md
+obj_dir

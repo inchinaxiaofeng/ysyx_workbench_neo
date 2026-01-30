@@ -25,13 +25,14 @@
 #include <common.h>
 #include <sim/verilator_sim.h>
 #include <stdio.h>
+#include str(VSimTop_H)
 
 VerilatedContext *contextp;
 
 VerilatedVcdC *tfp = NULL;
 VSimTop *sim_top = NULL;
 
-bool trace_en = false;
+bool trace_en = CONFIG_DEFAULT_VCD;
 bool tele_diff_essen = false;
 bool tele_diff_reg = false;
 
@@ -67,7 +68,7 @@ void single_step() {
 
 void sim_exec(int num) {
   for (int i = 0; i < num; i++) {
-    single_step(trace_en);
+    single_step();
   }
 }
 
@@ -80,7 +81,7 @@ void sim_reset(int num) {
   // 2. 0 -> 1: 持续n个周期
   sim_top->reset = 1;
   for (int i = 0; i < num; i++) {
-    single_step(false);
+    single_step();
   }
 
   // 3. 1 -> 0: 复位释放，准备执行

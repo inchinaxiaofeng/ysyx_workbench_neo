@@ -1,17 +1,49 @@
+# =========================================================
+# 1. 加载 Kconfig 生成的配置
+# =========================================================
+# 假设 auto.conf 在 config 目录或 build 目录下，请根据实际路径调整
+# 你的文件列表中有 auto.conf，请确保路径指向它
+CONFIG_FILE := $(NPC_HOME)/config/auto.conf 
+# 或者如果它在根目录: CONFIG_FILE := auto.conf
+
+# 如果文件存在，则 include 它
+ifneq ($(wildcard $(CONFIG_FILE)),)
+    include $(CONFIG_FILE)
+endif
+
+# =========================================================
+# 2. 提取并清洗 TOPNAME
+# =========================================================
+# 默认值，防止 auto.conf 不存在或没配置时的报错
+ifndef CONFIG_TOPNAME
+    TOPNAME = SimTop
+else
+    # 关键步骤：去掉 Kconfig 字符串自带的双引号 ""
+    # 比如 "PureSimTop32" -> PureSimTop32
+    TOPNAME = $(patsubst "%",%,$(CONFIG_TOPNAME))
+endif
+
+# 构造 Verilator 生成的类名 (自动加 V 前缀)
+V_TOPNAME = V$(TOPNAME)
+
 # 指定性参数
-## 模块顶层名字
-TOPNAME ?= PureSimTop32
 ## Refrance Module 名字
 REF = riscv64-nemu-interpreter-so
 ## 存放Verilator编译结果的
 BUILD_DIR = ./build
 ## 需要被运行的BIN文件
-IMG ?= ???
+IMG ?= 
 ## 用于打开VCD的软件
 GTK = gtkwave
 ## 包装器环境头文件
-INC_PATH += $(NPC_HOME)/config/autoconfig.h
+INC_PATH += $(NPC_HOME)/config/
 INC_PATH += $(NPC_HOME)/csrc/include/
+INC_PATH += $(NPC_HOME)/build/
+### 架构相关
+INC_PATH += $(NPC_HOME)/csrc/src/isa/riscv32/include
+INC_PATH += $(NPC_HOME)/csrc/src/isa/riscv32/local-include
+## 放Verilator编译出的东西的
+OBJ_DIR = $(NPC_HOME)/obj_dir
 
 # Verilator相关
 ## 可执行文件
@@ -35,8 +67,15 @@ LDFLAGS += -fsanitize=address -fsanitize=leak
 
 ## 传递给Verilator编译器的参数, 包含路径和TOP_NAME的定义
 ## 主要仿真环境使用.
-CFLAGS += $(INCLUDE) -DTOP_NAME"\"V$(TOPNAME)\""
+CFLAGS += $(INCFLAGS) -DTOP_NAME"\"$(V_TOPNAME)\""
 CFLAGS += -Wall
+# =========================================================
+# 3. 注入宏定义到 CFLAGS 
+# =========================================================
+# 传递给 C++ 编译器：
+# 1. VSimTop:  作为类名的别名 (直接替换代码中的 VSimTop)
+# 2. VSimTop_H: 头文件名字符串 (用于 #include)
+CFLAGS += -DVSimTop=$(V_TOPNAME) -DVSimTop_H='"$(V_TOPNAME).h"'
 
 ## 静态链接和转化, 将Veirlog代码编译成Cpp代码
 ## 然后将包装器和Vtop一起编译
@@ -48,7 +87,7 @@ $(EXEC_OUT): $(CSRCS) $(VSRCS)
 		$^ \
 		$(addprefix -LDFLAGS , $(LDFLAGS)) \
 		$(addprefix -CFLAGS , $(CFLAGS)) \
-		-- Mdir $(OBJ_DIR) --exe -o $(abspath $(EXEC_OUT))
+		--Mdir $(OBJ_DIR) --exe -o $(abspath $(EXEC_OUT))
 
 # 执行
 

@@ -1,18 +1,18 @@
 #ifndef __MEM_SIM__
 #define __MEM_SIM__
 
-#include <cstdint>
+#include <common.h>
 #include <stdbool.h>
 
 typedef struct {
   bool iRen;
   bool iWen;
-  FMT_WORD iReadAddr;
-  FMT_WORD iWriteAddr;
+  word_t iReadAddr;
+  word_t iWriteAddr;
   uint32_t iByteMask; // 用多少拿多少
-  FMT_WORD iWriteData;
+  word_t iWriteData;
 } SimMem;
 bool getSimMem(SimMem *mem);
-void setSimMem(FMT_WORD oReadData);
+void setSimMem(word_t oReadData);
 
 #endif // !__MEM_SIM__

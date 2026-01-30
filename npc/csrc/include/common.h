@@ -21,7 +21,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <generated/autoconf.h>
+#include <autoconfig.h>
 #include <macro.h>
 
 #ifdef CONFIG_TARGET_AM

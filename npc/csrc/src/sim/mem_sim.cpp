@@ -24,6 +24,10 @@
  * 这个会严重缩小 对Cache命中率提升带来性能提升的增长幅度.
  */
 
+#include <common.h>
+#include <sim/mem_sim.h>
+#include str(VSimTop_H)
+
 extern VSimTop *sim_top;
 
 bool getSimMem(SimMem *mem) {
@@ -40,7 +44,7 @@ bool getSimMem(SimMem *mem) {
   return true;
 }
 
-void setSimMem(FMT_WORD oReadData) {
+void setSimMem(word_t oReadData) {
   sim_top->io_oReadData = oReadData;
   return;
 }
