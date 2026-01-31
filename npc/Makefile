@@ -116,7 +116,7 @@ all:
 	@echo "Write this Makefile by your self."
 
 run: run-env
-	$(call git_commit, "run NPC")
+	$(call git_commit, "run NPC") # DO NOT REMOVE THIS LINE!!!
 	-rm -rf $(VCD_FILE)
 	$(EXEC)
 
@@ -124,6 +124,11 @@ run-env: sim $(IMG)
 
 sim: $(EXEC_OUT)
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
+
+clean:
+	-rm -rf $(OBJ_DIR)
+	-rm -rf $(BUILD_DIR)
+	-rm -rf $(VCD_FILE)
 
 include ../Makefile
 
