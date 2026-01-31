@@ -16,10 +16,13 @@ void diff_exec() {
   // Difftest Register 遥测数据的获得
   DiffReg diffReg;
   getDiffReg(&diffReg); // 获得提交信息
-  if (diffReg.wen)
+  if (diffReg.wen) {
     setRegFile(diffReg.wdest, diffReg.wdata,
-               diffEssen.npc);                // 设置包装器中的影子寄存器堆
-  difftest_step(diffEssen.pc, diffEssen.npc); // 依赖影子寄存器堆进行差分
+               diffEssen.npc); // 设置包装器中的影子寄存器堆
+  }
+  if (diffEssen.valid) {
+    difftest_step(diffEssen.pc, diffEssen.npc); // 依赖影子寄存器堆进行差分
+  }
 #endif
 }
 

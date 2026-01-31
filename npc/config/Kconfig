@@ -212,6 +212,7 @@ config DIFFTEST
     Note that this will significantly reduce the performance of NEMU.
 
 config REF_SO
+	depends on DIFFTEST
     string "Reference design .so file name"
     default "riscv32-nemu-interpreter-so"
     help

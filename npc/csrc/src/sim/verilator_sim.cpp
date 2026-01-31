@@ -32,7 +32,7 @@ VerilatedContext *contextp;
 VerilatedVcdC *tfp = NULL;
 VSimTop *sim_top = NULL;
 
-bool trace_en = CONFIG_DEFAULT_VCD;
+bool vcd_trace_en = CONFIG_DEFAULT_VCD;
 bool tele_diff_essen = false;
 bool tele_diff_reg = false;
 
@@ -58,12 +58,14 @@ void single_step() {
   // 1. Clock Low
   sim_top->clock = 0;
   sim_top->eval();
-  TRACE_DUMP(trace_en, tfp, contextp->time());
+  TRACE_DUMP(vcd_trace_en, tfp, contextp->time());
+  contextp->timeInc(1);
 
   // 2. Clock High
   sim_top->clock = 1;
   sim_top->eval();
-  TRACE_DUMP(trace_en, tfp, contextp->time());
+  TRACE_DUMP(vcd_trace_en, tfp, contextp->time());
+  contextp->timeInc(1);
 }
 
 void sim_exec(int num) {

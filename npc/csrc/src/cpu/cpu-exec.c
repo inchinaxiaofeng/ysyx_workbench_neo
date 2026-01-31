@@ -72,7 +72,7 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
   if (g_print_step) {
     IFDEF(CONFIG_ITRACE, puts(_this->logbuf));
   }
-  IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
+  IFDEF(CONFIG_DIFFTEST, diff_exec());
 #ifdef CONFIG_WATCHPOINT
   if (check_watchpoint()) {
     nemu_state.state = NEMU_STOP;
@@ -93,9 +93,6 @@ static void exec_once(Decode *s, vaddr_t pc) {
   // 5. 返回
   single_step(); // 这里的TraceEN将会被指定是否开启VCD记录
   memory_exec(); // 自行判断是否需要读/写并完成操作.
-#ifdef CONFIG_DIFFTEST
-  diff_exec();
-#endif
 
 #ifdef CONFIG_ITRACE
   char *p = s->logbuf;

@@ -29,6 +29,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <sim/verilator_sim.h>
+
 static int is_batch_mode = false;
 
 void init_regex();
@@ -62,6 +64,7 @@ static int cmd_x(char *args);
 static int cmd_p(char *args);
 static int cmd_w(char *args);
 static int cmd_mt(char *args);
+static int cmd_vcd(char *args);
 
 static struct {
   const char *name;
@@ -89,8 +92,12 @@ static struct {
      "changes.",
      cmd_w},
     {"mt",
-     "[m y/n]. Turn on or turn off memory trace. Set CONFIG_MTRACE first.",
-     cmd_mt}};
+     "[mt y/n]. Turn on or turn off memory trace. Set CONFIG_MTRACE first.",
+     cmd_mt},
+    {"vcd",
+     "[vcd y/n] Turn on or turn off logging vcd file. Set "
+     "CONFIG_VCD_TRACE first.",
+     cmd_vcd}};
 
 #define NR_CMD ARRLEN(cmd_table)
 
@@ -250,16 +257,17 @@ static int cmd_p(char *args) {
 static int cmd_w(char *args) {
   /* extract the first argument */
   if (NULL == args) {
-    printf(ANSI_FG_RED "No arg is given." ANSI_NONE "\n");
+    printf(ANSI_FG_RED "[NPC-SDB] No arg is given." ANSI_NONE "\n");
     return 0;
   }
   bool success = true;
   WP *point = new_wp(args, &success);
   if (!success) {
-    printf(ANSI_FG_RED "Some thing wrong happend!" ANSI_NONE "\n");
+    printf(ANSI_FG_RED "[NPC-SDB] Some thing wrong happend!" ANSI_NONE "\n");
     free_wp_NO(point->NO);
   } else {
-    printf("Create a " ANSI_FG_CYAN "WatchPoint(NO.%d)" ANSI_NONE ": %s\n",
+    printf("[NPC-SDB] Create a " ANSI_FG_CYAN "WatchPoint(NO.%d)" ANSI_NONE
+           ": %s\n",
            point->NO, point->condation);
   }
   return 0;
@@ -270,13 +278,16 @@ static int cmd_mt(char *args) {
   /* extract the first argument */
   char *arg = strtok(NULL, " ");
   if (NULL == arg) {
-    printf("mtrace_en == %s\n", mtrace_en ? "y" : "n");
+    printf("[NPC-SDB] mtrace_en == %s\n", mtrace_en ? "y" : "n");
+    return 0;
   } else if (!isalpha(arg[0])) {
-    printf(ANSI_FG_RED
-           "[SDB] The parameter is inllegal and requires on or off" ANSI_NONE
-           "\n");
+    printf(
+        ANSI_FG_RED
+        "[NPC-SDB] The parameter is inllegal and requires on or off" ANSI_NONE
+        "\n");
     return 0;
   }
+
   switch (arg[0]) {
   case 'y':
     mtrace_en = true;
@@ -285,13 +296,45 @@ static int cmd_mt(char *args) {
     mtrace_en = false;
     break;
   default:
-    printf(ANSI_FG_RED "[SDB] Unknown option." ANSI_NONE "\n");
+    printf(ANSI_FG_RED "[NPC-SDB] Unknown option." ANSI_NONE "\n");
     break;
   }
 #else
-  printf(ANSI_FG_RED "CONFIG_MTRACE not defined." ANSI_NONE "\n");
+  printf(ANSI_FG_RED "[NPC-SDB] CONFIG_MTRACE not defined." ANSI_NONE "\n");
 #endif /* ifdef CONFIG_MTRACE */
 
+  return 0;
+}
+
+static int cmd_vcd(char *args) {
+#ifdef CONFIG_VCD_TRACE
+  /* extract the first argument */
+  char *arg = strtok(NULL, " ");
+  if (NULL == arg) {
+    printf("[NPC-SDB] vcd_trace_en == %s\n", vcd_trace_en ? "y" : "n");
+    return 0;
+  } else if (!isalpha(arg[0])) {
+    printf(
+        ANSI_FG_RED
+        "[NPC-SDB] The parameter is inllegal and requires on or off" ANSI_NONE
+        "\n");
+    return 0;
+  }
+
+  switch (arg[0]) {
+  case 'y':
+    vcd_trace_en = true;
+    break;
+  case 'n':
+    vcd_trace_en = false;
+    break;
+  default:
+    printf(ANSI_FG_RED "[NPC-SDB] Unknown option." ANSI_NONE "\n");
+    break;
+  }
+#else
+  printf(ANSI_FG_RED "[NPC-SDB] CONFIG_VCD_TRACE not defined." ANSI_NONE "\n");
+#endif
   return 0;
 }
 
