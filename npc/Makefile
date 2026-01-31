@@ -35,6 +35,12 @@ else
 	VCD_FILE = $(abspath $(CONFIG_VCD_FILE))
 endif
 
+ifndef CONFIG_LOG_FILE
+	LOG_FILE = $(abspath ./log/sim_top.log)
+else 
+	LOG_FILE = $(abspath $(CONFIG_LOG_FILE))
+endif
+
 
 # 构造 Verilator 生成的类名 (自动加 V 前缀)
 V_TOPNAME = V$(TOPNAME)
@@ -109,7 +115,8 @@ $(EXEC_OUT): $(CSRCS) $(VSRCS)
 		--Mdir $(OBJ_DIR) --exe -o $(abspath $(EXEC_OUT))
 
 # 执行
-EXEC_FLAGS = -d $(NEMU_HOME)/build/$(CONFIG_REF_SO)
+EXEC_FLAGS += -d $(NEMU_HOME)/build/$(CONFIG_REF_SO)
+EXEC_FLAGS += -l $(LOG_FILE)
 EXEC := $(EXEC_OUT) $(EXEC_FLAGS) $(ARGS) $(IMG)
 
 all:

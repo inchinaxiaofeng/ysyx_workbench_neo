@@ -195,6 +195,13 @@ config VCD_FILE
     help
       The path of the simulation wave VCD file.
 
+config LOG_FILE
+	string "Terminal log output file path"
+	default "./build/sim_top.log"
+	help
+		Specify the full path and filename for storing terminal logs.
+		Please ensure the filesystem is mounted and the target directory
+		has write permissions.
 
 config DIFFTEST
   depends on TARGET_NATIVE_ELF

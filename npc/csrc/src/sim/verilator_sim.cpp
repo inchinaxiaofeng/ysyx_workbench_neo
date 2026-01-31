@@ -44,8 +44,8 @@ void sim_init() {
   LogInfo("VCD tracing capability : " ANSI_FG_GREEN " ENABLED " ANSI_NONE);
   contextp->traceEverOn(true);
   tfp = new VerilatedVcdC;
-  tfp->open(str(VCD_FILE));
   sim_top->trace(tfp, 5);
+  tfp->open(str(VCD_FILE));
   Log("Waveform tracing capability ENABLED.");
 #else
   LogInfo("[SIM] VCD tracing capability: " ANSI_FG_RED "DISABLED" ANSI_NONE

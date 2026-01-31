@@ -9,6 +9,7 @@ extern bool trace_en;
 extern bool tele_diff_essen;
 extern bool tele_diff_reg;
 
+void sim_init();
 void single_step();
 void sim_final();
 
