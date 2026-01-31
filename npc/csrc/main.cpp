@@ -1,3 +1,4 @@
+#include "debug.h"
 #include <common.h>
 #include <engine/engine.h>
 #include <stdio.h>
@@ -7,6 +8,7 @@ void init_monitor(int, char *[]);
 int is_exit_status_bad();
 
 int main(int argc, char *argv[], char **env) {
+  LogInfo("WELCOME TO NPC wapper env.");
   /* Initialize the monitor. */
   init_monitor(argc, argv);
   /* Start engine. */

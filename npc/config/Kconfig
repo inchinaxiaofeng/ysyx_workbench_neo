@@ -188,6 +188,14 @@ config DEFAULT_VCD
   bool "Enable Default VCD logging."
   default n
 
+config VCD_FILE
+  depends on VCD_TRACE
+  string "Path to VCD file."
+    default "./build/sim_wave.vcd"
+    help
+      The path of the simulation wave VCD file.
+
+
 config DIFFTEST
   depends on TARGET_NATIVE_ELF
   bool "Enable differential testing"

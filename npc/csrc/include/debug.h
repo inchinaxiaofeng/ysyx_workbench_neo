@@ -17,15 +17,17 @@
 #define __DEBUG_H__
 
 #include <common.h>
-#include <stdio.h>
 #include <utils.h>
 
 #define Log(format, ...)                                                       \
   _Log(ANSI_FMT("[%s:%d %s] " format, ANSI_FG_BLUE) "\n", __FILE__, __LINE__,  \
        __func__, ##__VA_ARGS__)
 
-#define LogInfo(format, ...)                                                   \
+#define LogTrace(format, ...)                                                  \
   _Log(ANSI_FMT("[NPC] [%s:%d %s] " format, ANSI_FG_CYAN) "\n", __FILE__,      \
+       __LINE__, __func__, ##__VA_ARGS__)
+#define LogInfo(format, ...)                                                   \
+  _Log(ANSI_FMT("[NPC] [%s:%d %s] " format, ANSI_FG_BLUE) "\n", __FILE__,      \
        __LINE__, __func__, ##__VA_ARGS__)
 #define LogOK(format, ...)                                                     \
   _Log(ANSI_FMT("[NPC] [%s:%d %s] " format, ANSI_FG_GREEN) "\n", __FILE__,     \

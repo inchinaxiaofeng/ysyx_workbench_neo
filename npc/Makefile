@@ -29,6 +29,12 @@ else
     REF_SO = $(patsubst "%",%,$(CONFIG_REF_SO))
 endif
 
+ifndef CONFIG_VCD_FILE
+	VCD_FILE = $(abspath ./log/wave/sim_wave.vcd)
+else 
+	VCD_FILE = $(abspath $(CONFIG_VCD_FILE))
+endif
+
 
 # 构造 Verilator 生成的类名 (自动加 V 前缀)
 V_TOPNAME = V$(TOPNAME)
@@ -82,10 +88,12 @@ CFLAGS += -D__GUEST_ISA__=riscv32
 # =========================================================
 # 3. 注入宏定义到 CFLAGS 
 # =========================================================
-# 传递给 C++ 编译器：
-# 1. VSimTop:  作为类名的别名 (直接替换代码中的 VSimTop)
-# 2. VSimTop_H: 头文件名字符串 (用于 #include)
+## 传递给 C++ 编译器：
+## 1. VSimTop:  作为类名的别名 (直接替换代码中的 VSimTop)
+## 2. VSimTop_H: 头文件名字符串 (用于 #include)
 CFLAGS += -DVSimTop=$(V_TOPNAME) -DVSimTop_H='"$(V_TOPNAME).h"'
+## 3. VCD_FILE: 存储Wave文件的目录
+CFLAGS += -DVCD_FILE=$(VCD_FILE)
 
 ## 静态链接和转化, 将Veirlog代码编译成Cpp代码
 ## 然后将包装器和Vtop一起编译
@@ -108,6 +116,11 @@ all:
 	@echo "Write this Makefile by your self."
 
 run: run-env
+	$(call git_commit, "run NPC")
+	-rm -rf $(VCD_FILE)
+	$(EXEC)
+
+run-env: sim $(IMG)
 
 sim: $(EXEC_OUT)
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!

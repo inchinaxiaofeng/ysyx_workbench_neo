@@ -14,6 +14,7 @@
  ***************************************************************************************/
 
 #include "common.h"
+#include "debug.h"
 #include <elf.h>
 #include <isa.h>
 #include <memory/paddr.h>
@@ -147,6 +148,7 @@ static int parse_args(int argc, char *argv[]) {
 }
 
 void init_monitor(int argc, char *argv[]) {
+  LogTrace("Init monitor...");
   /* Perform some global initialization. */
 
   /* Parse arguments. */

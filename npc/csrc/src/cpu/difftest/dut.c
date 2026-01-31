@@ -14,8 +14,7 @@
  ***************************************************************************************/
 
 #include "common.h"
-#include <cstddef>
-#include <cstdint>
+#include "debug.h"
 #include <dlfcn.h>
 
 #include <cpu/cpu.h>
@@ -64,6 +63,8 @@ void difftest_skip_dut(int nr_ref, int nr_dut) {
 }
 
 void init_difftest(char *ref_so_file, long img_size, int port) {
+  LogTrace("Init difftest... ref_so_file: %s, %lx, %x", ref_so_file, img_size,
+           port);
   assert(ref_so_file != NULL);
 
   void *handle;

@@ -40,17 +40,17 @@ void sim_init() {
   LogInfo("[SIM] Initializing Verilator simulation environment...");
   contextp = new VerilatedContext;
   sim_top = new VSimTop;
-#ifdef TRACE_VCD
+#ifdef CONFIG_VCD_TRACE
   LogInfo("VCD tracing capability : " ANSI_FG_GREEN " ENABLED " ANSI_NONE);
   contextp->traceEverOn(true);
   tfp = new VerilatedVcdC;
-  top->trace(tfp, 5);
-  tfp->open("sim_wave.vcd");
+  tfp->open(str(VCD_FILE));
+  sim_top->trace(tfp, 5);
   Log("Waveform tracing capability ENABLED.");
 #else
   LogInfo("[SIM] VCD tracing capability: " ANSI_FG_RED "DISABLED" ANSI_NONE
           " (Not compiled)");
-#endif // VCD_TRACE
+#endif // CONFIG_VCD_TRACE
   LogOK("[SIM] Simulation environment ready. Time to flip those clocks!");
 }
 
@@ -90,7 +90,7 @@ void sim_reset(int num) {
 }
 
 void sim_final() {
-#ifdef TRACE_VCD
+#ifdef CONFIG_VCD_TRACE
   if (tfp) {
     tfp->close();
     LogInfo("[SIM] Waveform file closed and flushed to disk.");
