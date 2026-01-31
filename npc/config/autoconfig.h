@@ -16,6 +16,7 @@
 #define CONFIG_VCD_TRACE 1
 #define CONFIG_DEFAULT_VCD 1
 #define CONFIG_VCD_FILE "./build/sim_wave.vcd"
+#define CONFIG_LOG_FILE "./build/sim_top.log"
 #define CONFIG_DIFFTEST 1
 #define CONFIG_REF_SO "riscv32-nemu-interpreter-so"
 #define CONFIG_DIFFREG 1
